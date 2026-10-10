@@ -147,7 +147,7 @@ async function api(path, options = {}) {
     if (generation !== authGeneration && error.status !== 401) throw staleRequest();
     if (error.name === 'AbortError' || error instanceof TypeError) {
       throw new Error(remoteMode
-        ? 'Cannot reach your PC. Connect Tailscale on both devices and keep the PC on with the converter running, then try again.'
+        ? 'Cannot reach your PC. Connect Tailscale on both devices, keep the PC on with the converter running, and allow local network access in your browser’s site permissions. Then try again.'
         : 'The app is not responding. Make sure its launcher is still running, then try connecting again.');
     }
     throw error;
@@ -301,7 +301,7 @@ async function pollJob(generation) {
       return;
     }
     pollFailures += 1;
-    connectionNotice(remoteMode ? 'Connection interrupted. Keep Tailscale connected on both devices and the PC on with the converter running. Reconnecting…' : 'Connection interrupted. Reconnecting to your conversion…');
+    connectionNotice(remoteMode ? 'Connection interrupted. Keep Tailscale connected on both devices and the PC on with the converter running. Check that your browser allows local network access for this site. Reconnecting…' : 'Connection interrupted. Reconnecting to your conversion…');
     schedulePoll(Math.min(5000, 900 * (pollFailures + 1)));
   }
 }
