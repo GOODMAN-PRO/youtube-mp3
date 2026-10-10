@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#096b70">
+    <meta name="description" content="Convert a YouTube link to MP3 from any of your devices.">
+    <title>YouTube to MP3</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./remote-config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="app">
+      <header class="intro">
+        <div class="app-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 10v4m4-8v12m6-15v18m4-13v8"/></svg>
+        </div>
+        <h1>YouTube to MP3</h1>
+        <p>Paste a video link. Save the audio.</p>
+      </header>
+
+      <section class="converter" aria-label="Video converter">
+        <form id="remote-connect-form" class="remote-connect-form" novalidate hidden>
+          <h2>Connect to your PC</h2>
+          <p class="remote-help">Enter the access code from your PC. Keep that PC on while you use this page.</p>
+          <label for="access-code">Access code</label>
+          <div class="input-wrap">
+            <input id="access-code" name="accessCode" type="password" autocomplete="current-password" spellcheck="false" autocapitalize="off" aria-describedby="remote-connect-error" maxlength="512" required>
+          </div>
+          <p id="remote-connect-error" class="form-error" role="alert" hidden></p>
+          <button id="remote-connect-button" class="primary-button" type="submit">Connect</button>
+        </form>
+        <div id="remote-connection" class="remote-connection" hidden>
+          <span>Connected to your PC</span>
+          <button id="disconnect-button" class="text-button" type="button">Disconnect</button>
+        </div>
+        <div id="connection-notice" class="notice" role="alert" hidden>
+          <p id="connection-message"></p>
+          <button id="reconnect-button" class="text-button" type="button">Try connecting again</button>
+        </div>
+
+        <form id="convert-form" novalidate hidden>
+          <label for="video-url">YouTube link</label>
+          <div class="input-wrap">
+            <input id="video-url" name="url" type="text" inputmode="url" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://www.youtube.com/watch?v=…" aria-describedby="url-hint form-error" required maxlength="2048">
+            <button id="paste-button" class="paste-button" type="button" hidden>
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 4H5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-2"/><rect x="7" y="2" width="6" height="4" rx="1"/></svg>
+              Paste
+            </button>
+          </div>
+          <div class="input-details">
+            <p id="url-hint">One video at a time, including Shorts.</p>
+            <button id="clear-button" class="text-button" type="button" hidden>Clear link</button>
+          </div>
+          <div id="browser-session-option" class="browser-session-option" hidden>
+            <label for="use-browser-session">
+              <input id="use-browser-session" name="useBrowserSession" type="checkbox" aria-describedby="browser-session-hint">
+              <span id="browser-session-label">Use my browser’s YouTube session</span>
+            </label>
+            <p id="browser-session-hint">Uses your browser’s existing YouTube sign-in.</p>
+          </div>
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+          <button id="convert-button" class="primary-button" type="submit" disabled>
+            <span id="convert-label">Connecting…</span>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg>
+          </button>
+        </form>
+
+        <section id="job-panel" class="job-panel" aria-labelledby="job-title" hidden>
+          <div class="job-heading">
+            <div id="job-symbol" class="job-symbol" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="17" cy="16" rx="3" ry="3"/></svg>
+            </div>
+            <div class="job-info">
+              <h2 id="job-title">Getting your video</h2>
+              <p id="job-meta">Reading video details…</p>
+            </div>
+          </div>
+          <div id="progress-area" class="progress-area">
+            <div class="progress-description">
+              <span id="job-status" role="status" aria-live="polite" aria-atomic="true">Starting…</span>
+              <span id="progress-percent" aria-hidden="true"></span>
+            </div>
+            <progress id="job-progress" max="100" aria-label="Conversion progress"></progress>
+          </div>
+          <p id="job-error" class="form-error" role="alert" hidden></p>
+          <div class="job-actions">
+            <button id="cancel-button" class="secondary-button" type="button">Cancel conversion</button>
+            <a id="download-button" class="primary-button" download hidden>
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v9m-4-4 4 4 4-4M4 13v4h12v-4"/></svg>
+              <span id="download-label">Download MP3</span>
+            </a>
+            <button id="retry-button" class="primary-button" type="button" hidden>Try conversion again</button>
+            <button id="another-button" class="text-button" type="button" hidden>Convert another video</button>
+          </div>
+        </section>
+      </section>
+      <footer class="app-footer">
+        <span>MP3 audio</span><span aria-hidden="true">·</span><span>Best available source</span>
+      </footer>
+      <p id="clipboard-status" class="visually-hidden" role="status" aria-live="polite"></p>
+      <noscript><p class="notice">Enable JavaScript in your browser to use the converter.</p></noscript>
+    </main>
+  </body>
+</html>
