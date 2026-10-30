@@ -247,8 +247,8 @@ function renderJob(job) {
   $('job-title').textContent = job.title || (job.status === 'error' ? 'Conversion could not finish' : 'Getting your video');
   const meta = [durationText(job.duration), job.status === 'ready' ? sizeText(job.size) : '', formatLabel].filter(Boolean);
   $('job-meta').textContent = job.title ? meta.join(' · ') : 'Reading video details…';
-  $('job-audio-icon').hidden = format === 'mp4';
-  $('job-video-icon').hidden = format !== 'mp4';
+  $('job-audio-icon').toggleAttribute('hidden', format === 'mp4');
+  $('job-video-icon').toggleAttribute('hidden', format !== 'mp4');
   const labels = {
     starting: 'Reading video details…',
     downloading: format === 'mp4' ? 'Downloading video…' : 'Downloading audio…',
