@@ -7,6 +7,9 @@ const convertButton = $('convert-button');
 const convertLabel = $('convert-label');
 const pasteButton = $('paste-button');
 const clearButton = $('clear-button');
+const formatOptions = $('format-options');
+const mp3Option = $('format-mp3');
+const mp4Option = $('format-mp4');
 const browserSessionCheckbox = $('use-browser-session');
 const accessInput = $('access-code');
 const downloadButton = $('download-button');
@@ -172,17 +175,35 @@ function isActive() {
   return currentJob && !terminalStates.has(currentJob.status);
 }
 
+function selectedFormat() {
+  return mp4Option.checked ? 'mp4' : 'mp3';
+}
+
+function jobFormat(job) {
+  return job?.format === 'mp4' ? 'mp4' : 'mp3';
+}
+
+function defaultFilename(job) {
+  return jobFormat(job) === 'mp4' ? 'video.mp4' : 'audio.mp3';
+}
+
 function updateControls() {
   const accessible = !remoteMode || remoteConnected;
   const busy = Boolean(requestInFlight || isActive());
   const finished = Boolean(currentJob && terminalStates.has(currentJob.status));
   input.disabled = busy;
   pasteButton.disabled = busy;
+  formatOptions.disabled = busy;
+  const format = selectedFormat();
+  const formatHint = format === 'mp4' ? 'Video with audio, up to 720p.' : 'Audio only, from the best available source.';
+  if ($('format-hint').textContent !== formatHint) $('format-hint').textContent = formatHint;
+  $('footer-format').textContent = format === 'mp4' ? 'MP4 video' : 'MP3 audio';
+  $('footer-quality').textContent = format === 'mp4' ? 'Up to 720p' : 'Best available source';
   browserSessionCheckbox.disabled = busy || !browserSessionAvailable;
   clearButton.hidden = !input.value || busy || finished;
   convertButton.disabled = !serviceReady || busy;
   convertButton.hidden = finished;
-  convertLabel.textContent = busy ? 'Converting…' : 'Convert to MP3';
+  convertLabel.textContent = busy ? 'Converting…' : `Convert to ${format.toUpperCase()}`;
   $('cancel-button').disabled = cancelInFlight;
   $('cancel-button').textContent = cancelInFlight ? 'Cancelling…' : 'Cancel conversion';
   $('retry-button').disabled = !serviceReady || requestInFlight;
@@ -195,7 +216,7 @@ function updateControls() {
   $('remote-connect-button').textContent = connecting ? 'Connecting…' : 'Connect';
   $('reconnect-button').hidden = !accessible;
   $('reconnect-button').disabled = connecting;
-  $('download-label').textContent = downloadInFlight ? 'Preparing download…' : 'Download MP3';
+  $('download-label').textContent = downloadInFlight ? 'Preparing download…' : `Download ${(currentJob ? jobFormat(currentJob) : format).toUpperCase()}`;
   if (downloadInFlight) downloadButton.setAttribute('aria-disabled', 'true');
   else downloadButton.removeAttribute('aria-disabled');
 }
@@ -216,17 +237,23 @@ function sizeText(bytes) {
 
 function renderJob(job) {
   currentJob = job;
+  const format = jobFormat(job);
+  const formatLabel = format.toUpperCase();
+  mp3Option.checked = format === 'mp3';
+  mp4Option.checked = format === 'mp4';
   saveJob(job.id);
   panel.hidden = false;
   panel.dataset.state = job.status;
   $('job-title').textContent = job.title || (job.status === 'error' ? 'Conversion could not finish' : 'Getting your video');
-  const meta = [durationText(job.duration), job.status === 'ready' ? sizeText(job.size) : '', 'MP3'].filter(Boolean);
+  const meta = [durationText(job.duration), job.status === 'ready' ? sizeText(job.size) : '', formatLabel].filter(Boolean);
   $('job-meta').textContent = job.title ? meta.join(' · ') : 'Reading video details…';
+  $('job-audio-icon').hidden = format === 'mp4';
+  $('job-video-icon').hidden = format !== 'mp4';
   const labels = {
     starting: 'Reading video details…',
-    downloading: 'Downloading audio…',
-    converting: 'Creating your MP3…',
-    ready: 'Your MP3 is ready.',
+    downloading: format === 'mp4' ? 'Downloading video…' : 'Downloading audio…',
+    converting: `Creating your ${formatLabel}…`,
+    ready: `Your ${formatLabel} is ready.`,
     error: 'Conversion could not finish.',
     cancelled: 'Conversion cancelled.',
   };
@@ -255,7 +282,7 @@ function renderJob(job) {
     } else {
       // Always use this app's own download route, even if a response has an unexpected URL.
       downloadButton.href = `/api/jobs/${encodeURIComponent(job.id)}/download`;
-      downloadButton.download = job.filename || 'audio.mp3';
+      downloadButton.download = job.filename || defaultFilename(job);
     }
   } else {
     $('download-button').removeAttribute('href');
@@ -297,7 +324,7 @@ async function pollJob(generation) {
     if (error.status === 404) {
       connectionNotice('');
       resetJob(false);
-      formError('This conversion has expired. Paste the link again to make another MP3.');
+      formError('This conversion has expired. Paste the link to convert it again.');
       return;
     }
     pollFailures += 1;
@@ -306,7 +333,7 @@ async function pollJob(generation) {
   }
 }
 
-function resetJob(clearInput = true) {
+function resetJob(clearInput = true, focusInput = true) {
   stopPolling();
   currentJob = null;
   saveJob(null);
@@ -314,7 +341,7 @@ function resetJob(clearInput = true) {
   if (clearInput) input.value = '';
   formError('');
   updateControls();
-  input.focus();
+  if (focusInput) input.focus();
 }
 
 async function connect() {
@@ -335,7 +362,7 @@ async function connect() {
     }
     configureBrowserSession(health.browserSessionLabel);
     if (!serviceReady) {
-      connectionNotice(`The audio tools are not ready${health.missing?.length ? ` (${health.missing.join(', ')})` : ''}. Restart the app using its launcher to finish setup.`);
+      connectionNotice(`The conversion tools are not ready${health.missing?.length ? ` (${health.missing.join(', ')})` : ''}. Restart the app using its launcher to finish setup.`);
       updateControls();
       return;
     }
@@ -353,7 +380,7 @@ async function connect() {
         } catch (error) {
           if (error.status !== 404) throw error;
           resetJob(false);
-          formError('Your previous conversion has expired. Paste a link to make a new MP3.');
+          formError('Your previous conversion has expired. Paste a link to convert it again.');
         }
       }
     }
@@ -398,7 +425,7 @@ async function startConversion(event) {
     const job = await api('/api/jobs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: url.href, useBrowserSession: browserSessionAvailable && browserSessionCheckbox.checked }),
+      body: JSON.stringify({ url: url.href, useBrowserSession: browserSessionAvailable && browserSessionCheckbox.checked, format: selectedFormat() }),
     });
     pollFailures = 0;
     connectionNotice('');
@@ -433,6 +460,12 @@ $('remote-connect-form').addEventListener('submit', async (event) => {
   await connect();
 });
 $('disconnect-button').addEventListener('click', () => disconnectRemote());
+formatOptions.addEventListener('change', () => {
+  if (requestInFlight || isActive()) return;
+  if (currentJob && terminalStates.has(currentJob.status)) resetJob(false, false);
+  formError('');
+  updateControls();
+});
 browserSessionCheckbox.addEventListener('change', () => {
   browserSessionPreference = browserSessionCheckbox.checked;
   try { sessionStorage.setItem(browserSessionStorageKey, String(browserSessionPreference)); } catch { /* Keep the preference for this page when storage is unavailable. */ }
@@ -506,7 +539,7 @@ downloadButton.addEventListener('click', async (event) => {
     }
     const link = document.createElement('a');
     link.href = `${apiBase}${ticket.downloadPath}`;
-    link.download = currentJob.filename || 'audio.mp3';
+    link.download = currentJob.filename || defaultFilename(currentJob);
     link.referrerPolicy = 'no-referrer';
     link.rel = 'noopener noreferrer';
     link.hidden = true;

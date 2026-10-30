@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#096b70">
-    <meta name="description" content="Convert a YouTube link to MP3 from any of your devices.">
-    <title>YouTube to MP3</title>
+    <meta name="description" content="Save a YouTube link as MP3 audio or MP4 video on your computer.">
+    <title>YouTube to MP3 &amp; MP4</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./styles.css">
     <script src="./remote-config.js" defer></script>
@@ -17,8 +17,8 @@
         <div class="app-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 10v4m4-8v12m6-15v18m4-13v8"/></svg>
         </div>
-        <h1>YouTube to MP3</h1>
-        <p>Paste a video link. Save the audio.</p>
+        <h1>YouTube converter</h1>
+        <p>Paste a link. Save the audio or video.</p>
       </header>
 
       <section class="converter" aria-label="Video converter">
@@ -54,6 +54,20 @@
             <p id="url-hint">One video at a time, including Shorts.</p>
             <button id="clear-button" class="text-button" type="button" hidden>Clear link</button>
           </div>
+          <fieldset id="format-options" class="format-options" aria-describedby="format-hint">
+            <legend>Save as</legend>
+            <div class="format-choices">
+              <label for="format-mp3">
+                <input id="format-mp3" name="format" type="radio" value="mp3" checked>
+                <span>MP3 audio</span>
+              </label>
+              <label for="format-mp4">
+                <input id="format-mp4" name="format" type="radio" value="mp4">
+                <span>MP4 video</span>
+              </label>
+            </div>
+            <p id="format-hint" aria-live="polite">Audio only, from the best available source.</p>
+          </fieldset>
           <div id="browser-session-option" class="browser-session-option" hidden>
             <label for="use-browser-session">
               <input id="use-browser-session" name="useBrowserSession" type="checkbox" aria-describedby="browser-session-hint">
@@ -71,7 +85,8 @@
         <section id="job-panel" class="job-panel" aria-labelledby="job-title" hidden>
           <div class="job-heading">
             <div id="job-symbol" class="job-symbol" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="17" cy="16" rx="3" ry="3"/></svg>
+              <svg id="job-audio-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="17" cy="16" rx="3" ry="3"/></svg>
+              <svg id="job-video-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" hidden><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3Z"/></svg>
             </div>
             <div class="job-info">
               <h2 id="job-title">Getting your video</h2>
@@ -98,7 +113,7 @@
         </section>
       </section>
       <footer class="app-footer">
-        <span>MP3 audio</span><span aria-hidden="true">·</span><span>Best available source</span>
+        <span id="footer-format">MP3 audio</span><span aria-hidden="true">·</span><span id="footer-quality">Best available source</span>
       </footer>
       <p id="clipboard-status" class="visually-hidden" role="status" aria-live="polite"></p>
       <noscript><p class="notice">Enable JavaScript in your browser to use the converter.</p></noscript>

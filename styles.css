@@ -50,6 +50,17 @@ input:disabled { color: var(--muted); }
 .paste-button:disabled { opacity: .5; }
 .input-details { display: flex; gap: 12px; align-items: baseline; justify-content: space-between; margin: 10px 0 25px; }
 .input-details p { margin: 0; font-size: .8125rem; line-height: 1.5; color: var(--muted); }
+.format-options { min-width: 0; padding: 0; margin: 0 0 24px; border: 0; }
+.format-options legend { padding: 0; margin-bottom: 10px; font-size: .9375rem; font-weight: 600; }
+.format-choices { display: flex; gap: 10px; }
+.format-choices label { display: flex; flex: 1; align-items: center; gap: 9px; min-width: 0; min-height: 44px; padding: 10px 12px; margin: 0; border: 1px solid var(--border); border-radius: 7px; font-size: .875rem; font-weight: 500; line-height: 1.5; cursor: pointer; }
+.format-choices label:has(input:checked) { background: var(--primary-soft); border-color: var(--primary); }
+.format-choices label:hover { border-color: var(--primary); }
+.format-choices input { flex: 0 0 16px; width: 16px; height: 16px; margin: 0; padding: 0; accent-color: var(--primary); cursor: pointer; }
+.format-choices input:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.format-options:disabled label, .format-options:disabled input { cursor: default; }
+.format-options:disabled label { color: var(--muted); }
+.format-options p { margin: 9px 0 0; color: var(--muted); font-size: .8125rem; line-height: 1.5; }
 .browser-session-option { margin-bottom: 24px; }
 .browser-session-option label { display: flex; align-items: flex-start; gap: 9px; margin: 0; font-size: .8125rem; font-weight: 500; line-height: 1.5; cursor: pointer; }
 .browser-session-option input { flex: 0 0 17px; width: 17px; height: 17px; margin: 1px 0 0; padding: 0; accent-color: var(--primary); cursor: pointer; }
